@@ -1,0 +1,104 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FleetEase | Vehicle Rental</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <!-- Navigation Bar -->
+    <header>
+        <nav class="navbar">
+            <h2 class="logo">FleetEase</h2>
+
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#vehicles">Vehicles</a></li>
+                <li><a href="#about">About</a></li>
+            </ul>
+
+            <a href="#vehicles" class="nav-button">Explore Vehicles</a>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-content">
+            <h1>Your Journey, Your Ride.</h1>
+
+            <p>
+                Rent your favorite cars and bikes at affordable prices.
+                Easy booking, comfortable rides and reliable service.
+            </p>
+
+            <a href="#vehicles" class="primary-button">
+                Browse Vehicles
+            </a>
+        </div>
+    </section>
+
+    <!-- Vehicle Section -->
+    <section class="vehicles-section" id="vehicles">
+
+        <h2>Explore Our Vehicles</h2>
+        <p class="section-description">
+            Choose your perfect ride for your next journey.
+        </p>
+
+        <div class="vehicle-container">
+
+            {% for vehicle in vehicles %}
+            <div class="vehicle-card">
+
+                <img src="{{ vehicle.image }}"
+                     alt="{{ vehicle.name }}">
+
+                <div class="vehicle-details">
+
+                    <h3>{{ vehicle.name }}</h3>
+
+                    <p>Category: {{ vehicle.category }}</p>
+                    <p>Fuel: {{ vehicle.fuel }}</p>
+                    <p>Seats: {{ vehicle.seats }}</p>
+
+                    <h3 class="price">
+                        ₹{{ vehicle.price }} / day
+                    </h3>
+
+                    <button onclick="bookVehicle('{{ vehicle.name }}')">
+                        Book Now
+                    </button>
+
+                </div>
+            </div>
+            {% endfor %}
+
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about-section" id="about">
+        <h2>About FleetEase</h2>
+
+        <p>
+            FleetEase is a vehicle rental platform designed to make
+            renting cars and bikes simple, affordable and convenient.
+        </p>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>© 2026 FleetEase. All Rights Reserved.</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}">
+    </script>
+
+</body>
+</html>
