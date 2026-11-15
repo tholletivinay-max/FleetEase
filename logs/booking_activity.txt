@@ -1,0 +1,8 @@
+Time: 15-11-2026 17:00:00
+Vehicle: Hyundai i20
+Pickup Date: 2026-11-18
+Return Date: 2026-11-20
+Rental Days: 3
+Total Price: Rs. 4500
+----------------------------------------
+

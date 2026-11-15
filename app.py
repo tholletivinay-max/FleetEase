@@ -3,6 +3,8 @@
 from flask import Flask, render_template, jsonify, request, redirect, url_for
 
 from datetime import date
+from models.vehicle import Car, Bike
+from utils.booking_logger import log_booking, log_error
 def get_booking_summary():
     # Your logic here to fetch the data
     return ...
@@ -18,23 +20,28 @@ from database.db import (
 app = Flask(__name__)
 
 vehicles = [
-    {"id": 1, "name": "Hyundai i20", "category": "Car",
-     "price": 1500, "fuel": "Petrol", "seats": 5,
-     "image": "https://images.unsplash.com/photo-1606611013016-969c19ba27bb?w=800"},
 
-    {"id": 2, "name": "Honda City", "category": "Car",
-     "price": 2200, "fuel": "Petrol", "seats": 5,
-     "image": "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=800"},
+    Car(
+        1, "Hyundai i20", 1500, "Petrol", 5,
+        "https://images.unsplash.com/photo-1606611013016-969c19ba27bb?w=800"
+    ).to_dict(),
 
-    {"id": 3, "name": "Royal Enfield Classic 350", "category": "Bike",
-     "price": 800, "fuel": "Petrol", "seats": 2,
-     "image": "https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=800"},
+    Car(
+        2, "Honda City", 2200, "Petrol", 5,
+        "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=800"
+    ).to_dict(),
 
-    {"id": 4, "name": "Yamaha MT-15", "category": "Bike",
-     "price": 600, "fuel": "Petrol", "seats": 2,
-     "image": "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=800"}
+    Bike(
+        3, "Royal Enfield Classic 350", 800, "Petrol", 2,
+        "https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=800"
+    ).to_dict(),
+
+    Bike(
+        4, "Yamaha MT-15", 600, "Petrol", 2,
+        "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=800"
+    ).to_dict()
+
 ]
-
 
 @app.route("/")
 def home():
@@ -93,6 +100,14 @@ def create_booking():
             total_price
         )
 
+        log_booking(
+            vehicle_name,
+            booking_date,
+            return_date,
+            total_days,
+            total_price
+        )
+
         return jsonify({
             "message": "Booking submitted successfully!",
             "total_days": total_days,
@@ -101,6 +116,12 @@ def create_booking():
 
     except ValueError:
         return jsonify({"message": "Please enter valid dates."}), 400
+
+    except Exception as error:
+        log_error(error)
+        return jsonify({
+            "message": "Something went wrong while processing your booking."
+        }), 500
 
 @app.route("/admin/bookings")
 def admin_bookings():
