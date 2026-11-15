@@ -15,7 +15,8 @@ from database.db import (
     get_all_bookings,
     update_booking_status,
     get_booking_summary,
-    get_bookings_by_phone
+    get_bookings_by_phone,
+    is_vehicle_available
 )
 
 app = Flask(__name__)
@@ -85,8 +86,16 @@ def create_booking():
         if pickup < date.today():
             return jsonify({"message": "Pickup date cannot be in the past."}), 400
 
-        if returning < pickup:
-            return jsonify({"message": "Return date must be on or after pickup date."}), 400
+        available = is_vehicle_available(
+            vehicle_name,
+            booking_date,
+            return_date
+        )
+
+        if not available:
+            return jsonify({
+                "message": "This vehicle is already booked for the selected dates. Please choose different dates."
+            }), 409
 
         total_days = (returning - pickup).days + 1
         total_price = total_days * vehicle["price"]

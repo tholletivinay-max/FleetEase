@@ -88,7 +88,90 @@ def get_all_bookings():
     return bookings
 
 
+
+def is_vehicle_available(vehicle_name, booking_date,
+                         return_date, exclude_booking_id=None):
+
+    connection = get_connection()
+
+    try:
+        cursor = connection.cursor()
+
+        cursor.execute("""
+            SELECT COUNT(*)
+            FROM bookings
+            WHERE vehicle_name = ?
+            AND status IN ('Pending', 'Approved')
+            AND booking_date <= ?
+            AND return_date >= ?
+            AND (? IS NULL OR id != ?)
+        """, (
+            vehicle_name,
+            return_date,
+            booking_date,
+            exclude_booking_id,
+            exclude_booking_id
+        ))
+
+        overlapping_bookings = cursor.fetchone()[0]
+
+        return overlapping_bookings == 0
+
+    finally:
+        connection.close()
+
+
 def update_booking_status(booking_id, new_status):
+
+    allowed_statuses = ["Pending", "Approved", "Rejected"]
+
+    if new_status not in allowed_statuses:
+        return False
+
+    connection = get_connection()
+
+    try:
+        cursor = connection.cursor()
+
+        cursor.execute("""
+            SELECT vehicle_name, booking_date, return_date
+            FROM bookings
+            WHERE id = ?
+        """, (booking_id,))
+
+        booking = cursor.fetchone()
+
+        if booking is None:
+            return False
+
+        vehicle_name, booking_date, return_date = booking
+
+        # Check availability before approving a booking
+        if new_status == "Approved" and return_date:
+
+            available = is_vehicle_available(
+                vehicle_name,
+                booking_date,
+                return_date,
+                booking_id
+            )
+
+            if not available:
+                return False
+
+        cursor.execute("""
+            UPDATE bookings
+            SET status = ?
+            WHERE id = ?
+        """, (new_status, booking_id))
+
+        connection.commit()
+
+        return cursor.rowcount > 0
+
+    finally:
+        connection.close()
+
 
     allowed_statuses = ["Pending", "Approved", "Rejected"]
 
