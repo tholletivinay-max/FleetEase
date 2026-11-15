@@ -1,5 +1,7 @@
 
-from flask import Flask, render_template, jsonify
+
+from flask import Flask, render_template, jsonify, request
+from database.db import initialize_database, save_booking
 
 app = Flask(__name__)
 
@@ -54,5 +56,42 @@ def get_vehicles():
     return jsonify(vehicles)
 
 
+@app.route("/api/bookings", methods=["POST"])
+def create_booking():
+
+    data = request.get_json(silent=True) or {}
+
+    vehicle_name = data.get("vehicle_name", "").strip()
+    customer_name = data.get("customer_name", "").strip()
+    phone = data.get("phone", "").strip()
+    booking_date = data.get("booking_date", "").strip()
+
+    if not all([vehicle_name, customer_name, phone, booking_date]):
+        return jsonify({"message": "Please fill in all fields."}), 400
+
+    if vehicle_name not in [v["name"] for v in vehicles]:
+        return jsonify({"message": "Invalid vehicle selected."}), 400
+
+    if not customer_name or not phone.isdigit() or len(phone) != 10:
+        return jsonify({"message": "Enter a valid name and 10-digit phone number."}), 400
+
+    try:
+        from datetime import date
+        selected_date = date.fromisoformat(booking_date)
+
+        if selected_date < date.today():
+            return jsonify({"message": "Booking date cannot be in the past."}), 400
+
+        save_booking(vehicle_name, customer_name, phone, booking_date)
+
+        return jsonify({
+            "message": "Booking request submitted successfully!"
+        }), 201
+
+    except ValueError:
+        return jsonify({"message": "Invalid booking date."}), 400
+
+
 if __name__ == "__main__":
+    initialize_database()
     app.run(debug=True)
