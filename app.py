@@ -1,13 +1,18 @@
 
 
+from flask import Flask, render_template, jsonify, request, redirect, url_for
 
-from flask import Flask, render_template, jsonify, request
 from datetime import date
+def get_booking_summary():
+    # Your logic here to fetch the data
+    return ...
 
 from database.db import (
     initialize_database,
     save_booking,
-    get_all_bookings
+    get_all_bookings,
+    update_booking_status,
+    get_booking_summary
 )
 
 app = Flask(__name__)
@@ -97,11 +102,27 @@ def create_booking():
     except ValueError:
         return jsonify({"message": "Please enter valid dates."}), 400
 
-
 @app.route("/admin/bookings")
 def admin_bookings():
     bookings = get_all_bookings()
     return render_template("admin.html", bookings=bookings)
+
+@app.route("/admin/reports")
+def admin_reports():
+    summary = get_booking_summary()
+    return render_template("reports.html", summary=summary)
+
+@app.route("/admin/update-status/<int:booking_id>", methods=["POST"])
+def change_booking_status(booking_id):
+
+    new_status = request.form.get("status")
+
+    updated = update_booking_status(booking_id, new_status)
+
+    if not updated:
+        return "Invalid booking or status.", 400
+
+    return redirect(url_for("admin_bookings"))
 
 
 if __name__ == "__main__":

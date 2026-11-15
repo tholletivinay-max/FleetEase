@@ -86,3 +86,54 @@ def get_all_bookings():
     connection.close()
 
     return bookings
+
+
+def update_booking_status(booking_id, new_status):
+
+    allowed_statuses = ["Pending", "Approved", "Rejected"]
+
+    if new_status not in allowed_statuses:
+        return False
+
+    connection = get_connection()
+
+    try:
+        cursor = connection.cursor()
+
+        cursor.execute("""
+            UPDATE bookings
+            SET status = ?
+            WHERE id = ?
+        """, (new_status, booking_id))
+
+        connection.commit()
+
+        return cursor.rowcount > 0
+
+    finally:
+        connection.close()
+
+def get_booking_summary():
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        SELECT
+            COUNT(*),
+            COALESCE(SUM(total_price), 0),
+            SUM(CASE WHEN status = 'Pending' THEN 1 ELSE 0 END),
+            SUM(CASE WHEN status = 'Approved' THEN 1 ELSE 0 END),
+            SUM(CASE WHEN status = 'Rejected' THEN 1 ELSE 0 END)
+        FROM bookings
+    """)
+
+    result = cursor.fetchone()
+    connection.close()
+
+    return {
+        "total_bookings": result[0] or 0,
+        "total_revenue": result[1] or 0,
+        "pending": result[2] or 0,
+        "approved": result[3] or 0,
+        "rejected": result[4] or 0
+    }
