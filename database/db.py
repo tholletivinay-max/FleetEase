@@ -137,3 +137,24 @@ def get_booking_summary():
         "approved": result[3] or 0,
         "rejected": result[4] or 0
     }
+
+def get_bookings_by_phone(phone):
+
+    connection = get_connection()
+
+    try:
+        cursor = connection.cursor()
+
+        cursor.execute("""
+            SELECT id, vehicle_name, booking_date,
+                   return_date, total_days, total_price, status
+            FROM bookings
+            WHERE phone = ?
+            ORDER BY id DESC
+        """, (phone,))
+
+        bookings = cursor.fetchall()
+        return bookings
+
+    finally:
+        connection.close()

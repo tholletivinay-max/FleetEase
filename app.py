@@ -14,7 +14,8 @@ from database.db import (
     save_booking,
     get_all_bookings,
     update_booking_status,
-    get_booking_summary
+    get_booking_summary,
+    get_bookings_by_phone
 )
 
 app = Flask(__name__)
@@ -122,6 +123,26 @@ def create_booking():
         return jsonify({
             "message": "Something went wrong while processing your booking."
         }), 500
+
+@app.route("/my-bookings", methods=["GET"])
+def my_bookings():
+
+    phone = request.args.get("phone", "").strip()
+    bookings = None
+    error = ""
+
+    if phone:
+        if not phone.isdigit() or len(phone) != 10:
+            error = "Please enter a valid 10-digit phone number."
+        else:
+            bookings = get_bookings_by_phone(phone)
+
+    return render_template(
+        "my_bookings.html",
+        bookings=bookings,
+        phone=phone,
+        error=error
+    )
 
 @app.route("/admin/bookings")
 def admin_bookings():

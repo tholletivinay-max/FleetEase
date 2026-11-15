@@ -1,0 +1,162 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Bookings - FleetEase</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+        }
+
+        h1 {
+            color: #172554;
+        }
+
+        input, button {
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 6px;
+        }
+
+        input {
+            border: 1px solid #cbd5e1;
+            width: 230px;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #172554;
+            color: white;
+        }
+
+        .error {
+            color: red;
+        }
+
+        a {
+            display: inline-block;
+            margin-top: 20px;
+            color: #2563eb;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>My FleetEase Bookings</h1>
+
+    <p>Enter the phone number used during your booking.</p>
+
+    <form method="GET" action="/my-bookings">
+
+        <input
+            type="text"
+            name="phone"
+            placeholder="10-digit phone number"
+            maxlength="10"
+            value="{{ phone }}"
+            required
+        >
+
+        <button type="submit">Search Bookings</button>
+
+    </form>
+
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+
+    {% if bookings is not none %}
+
+        {% if bookings %}
+
+            <h3>Your Booking History</h3>
+
+            <div class="table-wrapper">
+                <table>
+
+                    <tr>
+                        <th>ID</th>
+                        <th>Vehicle</th>
+                        <th>Pickup</th>
+                        <th>Return</th>
+                        <th>Days</th>
+                        <th>Price</th>
+                        <th>Status</th>
+                    </tr>
+
+                    {% for booking in bookings %}
+
+                    <tr>
+                        <td>{{ booking[0] }}</td>
+                        <td>{{ booking[1] }}</td>
+                        <td>{{ booking[2] or "—" }}</td>
+                        <td>{{ booking[3] or "—" }}</td>
+                        <td>{{ booking[4] or "—" }}</td>
+                        <td>
+                            {% if booking[5] is not none %}
+                                ₹{{ booking[5] }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                        <td>{{ booking[6] }}</td>
+                    </tr>
+
+                    {% endfor %}
+
+                </table>
+            </div>
+
+        {% else %}
+
+            <p>No bookings found for this phone number.</p>
+
+        {% endif %}
+
+    {% endif %}
+
+    <a href="/">← Back to Homepage</a>
+
+</div>
+
+</body>
+</html>
